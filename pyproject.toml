@@ -1,0 +1,36 @@
+[project]
+name = "sample-langchain"
+version = "0.1.0"
+description = ""
+
+authors = [
+    {name = "Ron Webb",email = "ron@ronella.xyz"}
+]
+
+readme = "README.md"
+requires-python = ">=3.13,<4.0"
+dependencies = [
+    "transformers (>=4.50.1,<5.0.0)",
+    "langchain (>=0.3.21,<0.4.0)",
+    "langchain-huggingface (>=0.1.2,<0.2.0)",
+    "torch (>=2.6.0,<3.0.0)",
+    "torchvision (>=0.21.0,<0.22.0)",
+    "torchaudio (>=2.6.0,<3.0.0)"
+]
+
+[tool.poetry.dependencies]
+torch = {version = "*", source = "pytorch-cuda"}
+torchvision = {version = "*", source = "pytorch-cuda"}
+torchaudio = {version = "*", source = "pytorch-cuda"}
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[[tool.poetry.source]]
+name = "pytorch-cuda"
+url = "https://download.pytorch.org/whl/cu126"
+priority = "explicit"
+
+[tool.poetry]
+package-mode = false
