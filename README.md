@@ -2,7 +2,7 @@
 
 [TOC]
 
-A sample project demonstrating how to use LangChain for building applications with large language models (LLMs).
+A sample project demonstrating how to use [LangChain](https://python.langchain.com) for building applications with large language models (LLMs).
 
 ## Overview
 
