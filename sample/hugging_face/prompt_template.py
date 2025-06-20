@@ -1,3 +1,10 @@
+"""
+Prompt template example for HuggingFace pipeline with LangChain.
+
+Author: Ron Webb
+Since: 1.0.0
+"""
+
 from langchain_huggingface import HuggingFacePipeline
 from transformers import pipeline
 from langchain.prompts import PromptTemplate
@@ -15,11 +22,13 @@ pipe = pipeline(
 llm = HuggingFacePipeline(pipeline=pipe)
 
 # Example with prompt template.
-prompt = PromptTemplate.from_template("""
+prompt = PromptTemplate.from_template(
+    """
 Question: {question}
 
 Answer: Let's think step by step.
-""")
+"""
+)
 
 chain = prompt | llm
 
