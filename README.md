@@ -72,6 +72,12 @@ GITHUB_TOKEN=your_github_models_token_here
 poetry run python -m sample.github_inference.simple_agent
 ```
 
+#### ReAct (Reasoning and Acting) Agent with Tools
+
+```sh
+poetry run python -m sample.github_inference.simple_agent_react
+```
+
 ## License
 
 MIT
