@@ -6,7 +6,7 @@ Since: 1.0.0
 """
 
 import os
-from typing import ClassVar, Dict, TypedDict, Annotated
+from typing import ClassVar, TypedDict, Annotated
 from dotenv import load_dotenv
 from pydantic import Field
 import requests
@@ -21,10 +21,11 @@ class GitHubModelsInferenceLLM(LLM):
     """
     LLM implementation for GitHub Models Inference API.
     """
+
     token: str = Field(..., exclude=True)
     model_id: str
     api_url: ClassVar[str] = "https://models.github.ai/inference/chat/completions"
-    headers: Dict[str, str] = Field(default_factory=dict, exclude=True)
+    headers: dict[str, str] = Field(default_factory=dict, exclude=True)
 
     def model_post_init(self, __context) -> None:
         """
@@ -48,7 +49,7 @@ class GitHubModelsInferenceLLM(LLM):
         """
         return "github_models_inference"
 
-    def _call(self, prompt: str, stop=None, run_manager=None) -> str:
+    def _call(self, prompt: str, stop=None, run_manager=None, **kwargs) -> str:
         """
         Calls the GitHub Models Inference API with the given prompt.
         """
@@ -64,20 +65,20 @@ class GitHubModelsInferenceLLM(LLM):
         data = response.json()
         return data["choices"][0]["message"]["content"]
 
-    async def _agenerate(self, prompts, stop=None, run_manager=None):
+    async def _agenerate(self, prompts, stop=None, run_manager=None, **kwargs):
         """
         Async generation is not supported.
         """
         raise NotImplementedError("Async generation not supported")
 
 
-def add_numbers_tool(a: str, b: str) -> str:
+def add_numbers_tool(num_a: str, num_b: str) -> str:
     """
     Adds two numbers provided as strings and returns the result as a string.
     """
     try:
-        result = float(a) + float(b)
-        return str(result)
+        calculation_result = float(num_a) + float(num_b)
+        return str(calculation_result)
     except (ValueError, TypeError) as exc:
         return f"Error: {exc}"
 
@@ -93,6 +94,7 @@ class AgentState(TypedDict):
     """
     State for the agent, containing a list of messages.
     """
+
     messages: Annotated[list[BaseMessage], add_messages]
 
 
@@ -112,7 +114,9 @@ def should_continue(state: AgentState) -> str:
     return END
 
 
-def call_model(state: AgentState, llm_instance: GitHubModelsInferenceLLM) -> Dict[str, list[BaseMessage]]:
+def call_model(
+    state: AgentState, llm: GitHubModelsInferenceLLM
+) -> dict[str, list[BaseMessage]]:
     """
     Call the LLM to generate a response.
     """
@@ -130,7 +134,8 @@ def call_model(state: AgentState, llm_instance: GitHubModelsInferenceLLM) -> Dic
         elif isinstance(msg, AIMessage):
             prompt_parts.append(f"Assistant: {msg.content}")
     prompt = "\n".join(prompt_parts)
-    response = llm_instance._call(prompt)
+    # Use the public invoke method instead of the protected _call method
+    response = llm.invoke(prompt)
     if "Action: AddNumbers" in response and "Action Input:" in response:
         try:
             action_input_start = response.find("Action Input:") + len("Action Input:")
@@ -148,12 +153,13 @@ def call_model(state: AgentState, llm_instance: GitHubModelsInferenceLLM) -> Dic
     return {"messages": [ai_message]}
 
 
-def create_agent_graph(llm_instance: GitHubModelsInferenceLLM):
+def create_agent_graph(llm: GitHubModelsInferenceLLM):
     """
     Create the LangGraph agent workflow.
     """
+
     def call_model_wrapper(state: AgentState):
-        return call_model(state, llm_instance)
+        return call_model(state, llm)
 
     workflow = StateGraph(AgentState)
     workflow.add_node("agent", call_model_wrapper)
@@ -164,25 +170,32 @@ def create_agent_graph(llm_instance: GitHubModelsInferenceLLM):
     return workflow.compile()
 
 
-if __name__ == "__main__":
+def main():
+    """
+    Main function to demonstrate the agent functionality.
+    """
     load_dotenv()
-    GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
-    MODEL_ID = "openai/gpt-4.1"
+    github_token = os.getenv("GITHUB_TOKEN")
+    model_id = "openai/gpt-4.1"
 
-    if not GITHUB_TOKEN:
+    if not github_token:
         raise ValueError("GITHUB_TOKEN is not set in the .env file.")
 
-    llm_instance = GitHubModelsInferenceLLM(token=GITHUB_TOKEN, model_id=MODEL_ID)
-    agent_graph = create_agent_graph(llm_instance)
-    QUESTION = "What is 7 plus 5? Use the AddNumbers tool."
-    print(f"Question: {QUESTION}")
+    llm_model = GitHubModelsInferenceLLM(token=github_token, model_id=model_id)
+    agent_graph = create_agent_graph(llm_model)
+    question = "What is 7 plus 5? Use the AddNumbers tool."
+    print(f"Question: {question}")
     try:
-        initial_state = {"messages": [HumanMessage(content=QUESTION)]}
-        result = agent_graph.invoke(initial_state)
-        final_message = result["messages"][-1]
+        initial_state = {"messages": [HumanMessage(content=question)]}
+        agent_result = agent_graph.invoke(initial_state)
+        final_message = agent_result["messages"][-1]
         print(f"Agent Answer: {final_message.content}")
     except (ValueError, TypeError, requests.RequestException) as exc:
         print(f"Error occurred: {exc}")
         print(
             "Make sure you have a valid GITHUB_TOKEN in your .env file with models:read scope."
         )
+
+
+if __name__ == "__main__":
+    main()

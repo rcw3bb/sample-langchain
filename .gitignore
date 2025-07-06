@@ -3,3 +3,5 @@
 __pycache__/
 .env
 .vscode/settings.json
+*.log
+.coverage

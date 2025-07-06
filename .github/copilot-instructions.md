@@ -77,3 +77,4 @@ Coding standards:
 - Always use `.env` for environment variables and load them using `python-dotenv`.
 - Private members should be prefixed with an underscore `__`.
 - Decompose large methods into smaller, reusable private methods.
+- If the a particular string is used multiple times, define it as a constant at the top of the module.
