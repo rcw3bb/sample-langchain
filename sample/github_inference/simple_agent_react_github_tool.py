@@ -73,7 +73,7 @@ if __name__ == "__main__":
         print("Starting agent execution...")
         result = agent.invoke({"messages": [("user", TOOL_QUESTION)]})
 
-        print(f"\n=== Final Answer ===")
+        print("\n=== Final Answer ===")
         # Extract the final message content from the agent response
         final_message = result["messages"][-1].content
         print(f"{final_message}")

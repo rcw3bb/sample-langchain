@@ -87,7 +87,7 @@ async def main() -> None:
         print("Starting agent execution...")
         result = await agent.ainvoke({"messages": [("user", tool_question)]})
 
-        print(f"\n=== Final Answer ===")
+        print("\n=== Final Answer ===")
         # Extract the final message content from the agent response
         final_message = result["messages"][-1].content
         print(f"{final_message}")
@@ -96,7 +96,7 @@ async def main() -> None:
         project_root = current_dir.parent.parent
         log_file = project_root / "mcp_tool_calls.log"
         if log_file.exists():
-            print(f"\n=== MCP Tool Call Log ===")
+            print("\n=== MCP Tool Call Log ===")
             print(f"Log file location: {log_file.absolute()}")
         else:
             print("\n=== MCP Tool Call Log ===")
